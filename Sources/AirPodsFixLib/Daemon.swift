@@ -6,18 +6,20 @@ public final class Daemon {
 
     private let queue = DispatchQueue(label: "com.airpods-fix.daemon")
     private var knownAirPods = Set<DeviceID>()
+    private var pendingFixes: [DeviceID: DispatchWorkItem] = [:]
 
     public init() {}
 
     public func start() {
-        queue.sync {
-            for id in allAudioDevices() where isAirPodsDevice(id) {
-                fixFormat(id)
-                attachFormatListener(to: id)
+        queue.async { [weak self] in
+            guard let self else { return }
+            for id in allAudioDevices() where self.isAirPodsDevice(id) {
+                self.fixFormat(id)
+                self.attachFormatListener(to: id)
             }
+            self.registerDeviceListListener()
+            self.log("Monitoring for AirPods connections...")
         }
-        registerDeviceListListener()
-        log("Monitoring for AirPods connections...")
     }
 
     // MARK: - Private
@@ -46,9 +48,14 @@ public final class Daemon {
             mElement: kAudioObjectPropertyElementMain
         )
         AudioObjectAddPropertyListenerBlock(id, &address, queue) { [weak self] _, _ in
-            self?.queue.asyncAfter(deadline: .now() + 0.5) {
+            guard let self else { return }
+            self.pendingFixes[id]?.cancel()
+            let item = DispatchWorkItem { [weak self] in
+                self?.pendingFixes[id] = nil
                 self?.fixFormat(id)
             }
+            self.pendingFixes[id] = item
+            self.queue.asyncAfter(deadline: .now() + 0.5, execute: item)
         }
     }
 
@@ -71,7 +78,11 @@ public final class Daemon {
             fixFormat(id)
             attachFormatListener(to: id)
         }
-        knownAirPods.subtract(knownAirPods.subtracting(current))
+        for id in knownAirPods.subtracting(current) {
+            pendingFixes[id]?.cancel()
+            pendingFixes[id] = nil
+        }
+        knownAirPods.formIntersection(current)
     }
 
     private func log(_ message: String) {
