@@ -18,8 +18,8 @@ let package = Package(
             dependencies: ["AirPodsFixLib"],
             path: "Sources/airpods-fix"
         ),
-        // XCTest-style test target (requires full Xcode to execute).
-        // Use the 'run-tests' target below when only Command Line Tools are present.
+        // Swift Testing target. Requires Xcode (Testing.framework is bundled with Xcode,
+        // not Command Line Tools). Use 'swift run run-tests' on CLT-only installs.
         .testTarget(
             name: "AirPodsFixLibTests",
             dependencies: ["AirPodsFixLib"],
