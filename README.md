@@ -47,13 +47,18 @@ It runs silently, consumes effectively zero CPU at idle (event-driven, not polli
 
 ## Installation
 
-Requires **Xcode Command Line Tools** for the Swift compiler:
+### Prerequisites
 
-```bash
-xcode-select --install
-```
+- **Apple Silicon Mac (arm64).** The daemon is built and tested on Apple Silicon only. `install.sh` compiles a single-architecture `arm64` binary via `swift build -c release`, so the compiled output will not run on Intel Macs. If you move to a new Mac, re-run `./install.sh` on that machine to rebuild against its SDK and Swift toolchain — do not copy the prebuilt binary from `~/.local/bin/` across machines.
+- **Xcode Command Line Tools** for the Swift compiler:
 
-Then clone, build, and install:
+  ```bash
+  xcode-select --install
+  ```
+
+### Build and install
+
+Clone, build, and install:
 
 ```bash
 git clone https://github.com/yoelf22/AirPodsOnMac.git
