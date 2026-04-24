@@ -23,20 +23,7 @@ let package = Package(
         .testTarget(
             name: "AirPodsFixLibTests",
             dependencies: ["AirPodsFixLib"],
-            path: "Tests/AirPodsFixLibTests",
-            swiftSettings: [
-                .unsafeFlags([
-                    "-F", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks"
-                ])
-            ],
-            linkerSettings: [
-                .unsafeFlags([
-                    "-F", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
-                    "-framework", "Testing",
-                    "-Xlinker", "-rpath",
-                    "-Xlinker", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks"
-                ])
-            ]
+            path: "Tests/AirPodsFixLibTests"
         ),
         // Standalone runner: 'swift run run-tests' works without Xcode.
         .executableTarget(
