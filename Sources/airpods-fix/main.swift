@@ -1,4 +1,6 @@
 import AirPodsFixLib
 import Foundation
 
-// entry point — wired in Task 4
+let daemon = Daemon()
+daemon.start()
+RunLoop.main.run()
