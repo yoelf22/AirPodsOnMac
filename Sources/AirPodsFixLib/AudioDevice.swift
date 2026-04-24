@@ -1,5 +1,4 @@
 import CoreAudio
-import Foundation
 
 public typealias DeviceID = AudioDeviceID
 
@@ -18,7 +17,8 @@ public func allAudioDevices() -> [DeviceID] {
     guard AudioObjectGetPropertyData(
         AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size, &ids
     ) == noErr else { return [] }
-    return ids
+    let actualCount = Int(size) / MemoryLayout<DeviceID>.size
+    return Array(ids.prefix(actualCount))
 }
 
 public func deviceName(_ id: DeviceID) -> String? {
@@ -27,10 +27,14 @@ public func deviceName(_ id: DeviceID) -> String? {
         mScope: kAudioObjectPropertyScopeGlobal,
         mElement: kAudioObjectPropertyElementMain
     )
-    var name = "" as CFString
-    var size = UInt32(MemoryLayout<CFString>.size)
-    guard AudioObjectGetPropertyData(id, &address, 0, nil, &size, &name) == noErr else { return nil }
-    return name as String
+    var name: CFString? = nil
+    var size = UInt32(MemoryLayout<CFString?>.size)
+    let status = withUnsafeMutablePointer(to: &name) { ptr in
+        AudioObjectGetPropertyData(id, &address, 0, nil, &size,
+                                   UnsafeMutableRawPointer(ptr))
+    }
+    guard status == noErr, let result = name else { return nil }
+    return result as String
 }
 
 public func getNominalSampleRate(_ id: DeviceID) -> Float64? {
